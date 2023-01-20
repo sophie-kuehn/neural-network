@@ -2,6 +2,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include "math.h"
 
 namespace SNN
 {
@@ -112,6 +113,7 @@ namespace SNN
     };
 };
 
+
 int main(int argc, char **argv)
 {
     auto network = new SNN::Network;
@@ -133,11 +135,11 @@ int main(int argc, char **argv)
     network->randomizeWeights();
     network->fire();
 
-    for (const auto& outputNeuron : network->neurons.back()) {
-        std::cout << std::to_string(outputNeuron->value) << std::endl;
-    }
+    double expectedResult = 1.0 + 2.0 + 3.0;
+    double result = network->neurons.back()[0]->value;
+    double diff = fabs(result - expectedResult);
 
+    std::cout << std::to_string(result) << " - diff: " << std::to_string(diff) << std::endl;
 
-    std::cout << "Hello, world!" << std::endl;
     return 0;
 }
