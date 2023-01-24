@@ -8,43 +8,83 @@ namespace SNN
 {
     class Neuron;
 
+    class ActivationFunction
+    {
+    public:
+        virtual double activate(double input) = 0;
+    };
+
+    class IdentityFunction : public ActivationFunction
+    {
+    public:
+        double activate(double input) override
+        {
+            return input;
+        };
+    };
+
     class Synapse
     {
     public:
-        double weight = 0;
         Neuron* inputNeuron;
         Neuron* outputNeuron;
 
-        void fire();
+        double weight = 0;
+
+        double getValue();
     };
 
     class Neuron
     {
     public:
-        double value = 0;
         std::vector<Synapse*> inputSynapses;
         std::vector<Synapse*> outputSynapses;
+        ActivationFunction* activationFunction = nullptr;
+
+        double value = 0;
+
+        double getValue()
+        {
+            double value = this->value;
+            for (const auto& synapse : this->inputSynapses) {
+                value += synapse->getValue();
+            }
+
+            if (this->activationFunction != nullptr) {
+                value = activationFunction->activate(value);
+            }
+
+            return value;
+        };
     };
 
-    void Synapse::fire()
+    double Synapse::getValue()
     {
-        //std::cout << "." << std::endl;
-        this->outputNeuron->value = this->outputNeuron->value + (this->inputNeuron->value * this->weight);
+        return this->inputNeuron->getValue() * this->weight;
     };
 
     typedef std::vector<Neuron*> NeuronLayer;
+    typedef std::vector<double> DoubleVector;
 
     class Network
     {
     public:
         std::vector<NeuronLayer> neurons;
 
-        Neuron* addNeuron()
+        Neuron* addNeuron(ActivationFunction* activationFunction)
+        {
+            return this->addNeuron(0.0, activationFunction);
+        };
+
+        Neuron* addNeuron(double value = 0.0, ActivationFunction* activationFunction = nullptr)
         {
             auto neuron = new Neuron;
+            neuron->value = value;
+            neuron->activationFunction = activationFunction;
             this->neurons.back().push_back(neuron);
             return neuron;
         };
+
 
         void openNewLayer()
         {
@@ -65,23 +105,14 @@ namespace SNN
         {
             if (this->neurons.size()-1 < rightLayer) return;
 
-            //int leftIndex = 0;
             for (const auto& leftNeuron : this->neurons[leftLayer]) {
-
-                //int rightIndex = 0;
                 for (const auto& rightNeuron : this->neurons[rightLayer]) {
                     auto synapse = new Synapse;
                     leftNeuron->outputSynapses.push_back(synapse);
                     rightNeuron->inputSynapses.push_back(synapse);
                     synapse->inputNeuron = leftNeuron;
                     synapse->outputNeuron = rightNeuron;
-
-
-                    //std::cout << "creating neurons for left " << std::to_string(leftIndex) << " right " << std::to_string(rightIndex) << std::endl;
-                    //rightIndex++;
                 }
-
-                //leftIndex++;
             }
 
         };
@@ -94,21 +125,18 @@ namespace SNN
                 for (const auto& neuron : layer) {
                     for (const auto& synapse : neuron->outputSynapses) {
                         synapse->weight = (rand() % 201) / 100.0 - 1.0;
-                        //std::cout << std::to_string(synapse->weight) << std::endl;
                     }
                 }
             }
         };
 
-        void fire()
+        DoubleVector getOutput()
         {
-            for (const auto& layer : this->neurons) {
-                for (const auto& neuron : layer) {
-                    for (const auto& synapse : neuron->outputSynapses) {
-                        synapse->fire();
-                    }
-                }
+            DoubleVector result;
+            for (const auto& neuron : this->neurons.back()) {
+                result.push_back(neuron->getValue());
             }
+            return result;
         };
     };
 };
@@ -118,28 +146,28 @@ int main(int argc, char **argv)
 {
     auto network = new SNN::Network;
 
-    network->openNewLayer();
-    for (int i = 0; i < 3; i++) network->addNeuron();
-
-    network->neurons[0][0]->value = 1.0;
-    network->neurons[0][1]->value = 2.0;
-    network->neurons[0][2]->value = 3.0;
+    auto actFn = new SNN::IdentityFunction;
 
     network->openNewLayer();
-    for (int i = 0; i < 10; i++) network->addNeuron();
+    network->addNeuron(1);
+    network->addNeuron(2);
+    network->addNeuron(3);
+    network->addNeuron(1); // bias
+
     network->openNewLayer();
-    for (int i = 0; i < 10; i++) network->addNeuron();
+    for (int i = 0; i < 10; i++) network->addNeuron(actFn);
+    network->openNewLayer();
+    for (int i = 0; i < 10; i++) network->addNeuron(actFn);
     network->openNewLayer();
     network->addNeuron();
     network->createSynapses();
     network->randomizeWeights();
-    network->fire();
 
     double expectedResult = 1.0 + 2.0 + 3.0;
-    double result = network->neurons.back()[0]->value;
-    double diff = fabs(result - expectedResult);
+    SNN::DoubleVector result = network->getOutput();
+    double diff = fabs(result[0] - expectedResult);
 
-    std::cout << std::to_string(result) << " - diff: " << std::to_string(diff) << std::endl;
+    std::cout << std::to_string(result[0]) << " - diff: " << std::to_string(diff) << std::endl;
 
     return 0;
 }
