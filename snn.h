@@ -11,6 +11,9 @@ namespace SNN
     typedef std::vector<Neuron*> NeuronLayer;
     typedef std::vector<double> DoubleVector;
 
+    void COutString(std::string str);
+    void COutDoubleVector(DoubleVector vector);
+
     class ActivationFunction
     {
     public:

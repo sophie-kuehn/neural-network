@@ -3,6 +3,21 @@
 
 namespace SNN
 {
+    void COutString(std::string str)
+    {
+        std::cout << str << std::endl;
+    }
+
+    void COutDoubleVector(DoubleVector vector)
+    {
+        std::cout << "{ ";
+        for (int i = 0; i < vector.size(); i++) {
+            std::cout << std::to_string(vector[i]);
+            if (i < vector.size()-1) std::cout << ", ";
+        }
+        std::cout << " }" << std::endl;
+    }
+
     double Identity::activate(double input)
     {
         return input;
@@ -139,7 +154,7 @@ namespace SNN
     void Network::addLayer(int numberOfNeurons, ActivationFunction* activationFunction)
     {
         this->openNewLayer();
-        for (int i = 0; i < 10; i++) this->addNeuron(activationFunction);
+        for (int i = 0; i < numberOfNeurons; i++) this->addNeuron(activationFunction);
     };
 
     void Network::createSynapses()
