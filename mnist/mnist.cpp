@@ -49,6 +49,8 @@ namespace SNN
 
     void MNIST_Test::test()
     {
+        std::cout << "test" << std::endl;
+
         float correct = 0;
         float incorrect = 0;
 
@@ -79,7 +81,7 @@ namespace SNN
         }
 
         float percentage = correct / (correct + incorrect);
-        std::cout << std::to_string(percentage) << std::endl;
+        std::cout << "result: " << std::to_string(percentage) << std::endl;
     };
 
     void MNIST_Test::execute(std::string mnistFilesRootPath)
@@ -102,7 +104,11 @@ namespace SNN
         double epsilon = 0.01;
 
         while(true) {
+            std::cout << "train" << std::endl;
+
             for (int i = 0; i < digitsTrain.size(); i++) {
+                //std::cout << std::to_string(i+1) << "/" << std::to_string(digitsTrain.size()) << std::endl;
+
                 SNN::DoubleVector input;
 
                 for (int x = 0; x < 28; x++) {
