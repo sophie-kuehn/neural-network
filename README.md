@@ -15,7 +15,7 @@ A command line appication/library/server that trains ad runs artificial neural n
 
 ## Acknowledgment
 
-This is a C++ implementation of a wonderful tutorial by https://github.com/Brotcrunsher:  
+This is based on a wonderful tutorial by https://github.com/Brotcrunsher:  
 https://www.youtube.com/playlist?list=PL58qjcU5nk8sUq97ze6MZB8aHflF0uNgK
 
 MNIST_Decoder based on: https://pastebin.com/fhyMz4nh  
