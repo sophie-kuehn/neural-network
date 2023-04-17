@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
-#include "mnist.h"
+#include "../header/mnist.hpp"
 
 namespace SNN
 {

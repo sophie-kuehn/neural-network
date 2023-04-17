@@ -1,5 +1,5 @@
-#ifndef SNN_H
-#define SNN_H
+#ifndef SNN_HPP
+#define SNN_HPP
 
 #include <vector>
 #include <string>

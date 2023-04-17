@@ -1,9 +1,9 @@
-#ifndef MNIST_H
-#define MNIST_H
+#ifndef MNIST_HPP
+#define MNIST_HPP
 
 #include <vector>
 #include <string>
-#include "../snn.h"
+#include "../header/snn.hpp"
 
 namespace SNN
 {

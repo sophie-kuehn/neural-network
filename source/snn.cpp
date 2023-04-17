@@ -1,5 +1,5 @@
 #include <cmath>
-#include "snn.h"
+#include "../header/snn.hpp"
 
 namespace SNN
 {
