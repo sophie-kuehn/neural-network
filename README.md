@@ -1,6 +1,6 @@
 ## SNN - Sophie's Neural Networks
 
-A command line appication/library/server that trains ad runs artificial neural networks.
+A command line appication/library/server that trains and runs artificial neural networks.
 
 ```diff
 - THIS IS A PROTOTYPE and does not yet include all the designated features!
