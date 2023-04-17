@@ -4,15 +4,12 @@
 
 int main(int argc, char **argv)
 {
+    // run MNIST test
     auto MNIST = new SNN::MNIST_Test;
     MNIST->execute("../mnist-data/");
     return 0;
 
-    // nn --network="3;10,i;10,i;1" --input="10;10;10" --epsilon=0.00005 --iterations=50000
-
-
-    // SETUP
-
+    // run own test
     auto network = new SNN::Network;
     auto actFn = new SNN::Identity;
     //auto actFn = new SNN::Sigmoid;
@@ -22,8 +19,6 @@ int main(int argc, char **argv)
     //network->addLayer(10, actFn);
     network->addLayer(1);
     network->createSynapses();
-
-    // TESTRUN
 
     for (int i=0; i<200000; i++) {
         SNN::DoubleVector input = {
@@ -35,9 +30,7 @@ int main(int argc, char **argv)
         //SNN::DoubleVector expected = {input[0] * input[1] * input[2]};
         //SNN::DoubleVector expected = {input[0] - input[1] - input[2]};
         SNN::DoubleVector expected = {input[0] + input[1] + input[2]};
-
         SNN::DoubleVector output = network->process(input, expected, 0.0001);
-
         std::cout << std::to_string(expected[0]) << " - op: " << std::to_string(output[0]) << " - diff: " << std::to_string(fabs(output[0] - expected[0])) << std::endl;
     }
 
