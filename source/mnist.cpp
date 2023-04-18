@@ -84,7 +84,7 @@ namespace SNN
         std::cout << "result: " << std::to_string(percentage) << std::endl;
     };
 
-    void MNIST_Test::execute(std::string mnistFilesRootPath)
+    void MNIST_Test::execute(std::string networkSaveFilePath, std::string mnistFilesRootPath)
     {
         this->digitsTrain = this->decoder->loadDataSet(
             mnistFilesRootPath + "train-images.idx3-ubyte",
@@ -96,11 +96,14 @@ namespace SNN
             mnistFilesRootPath + "t10k-labels.idx1-ubyte"
         );
 
-        auto actFn = new SNN::Sigmoid;
+        if (FileExists(networkSaveFilePath)) {
+            this->network->load(networkSaveFilePath);
+        } else {
+            this->network->addLayer(28*28);
+            this->network->addLayer(10, AF_ID_SIGMOID);
+            this->network->createSynapses();
+        }
 
-        this->network->addLayer(28*28);
-        this->network->addLayer(10, actFn);
-        this->network->createSynapses();
         double epsilon = 0.01;
 
         while(true) {
@@ -124,6 +127,7 @@ namespace SNN
             }
 
             this->test();
+            //this->network->store(networkSaveFilePath);
             epsilon *= 0.9;
         }
     };

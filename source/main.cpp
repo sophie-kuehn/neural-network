@@ -5,20 +5,21 @@
 int main(int argc, char **argv)
 {
     // run MNIST test
-    auto MNIST = new SNN::MNIST_Test;
-    MNIST->execute("../mnist-data/");
-    return 0;
+    //auto MNIST = new SNN::MNIST_Test;
+    //MNIST->execute("mnist.nn", "../mnist-data/");
+    //return 0;
 
     // run own test
     auto network = new SNN::Network;
-    auto actFn = new SNN::Identity;
-    //auto actFn = new SNN::Sigmoid;
-    //auto actFn = new SNN::HyperbolicTangent;
     network->addLayer(3);
-    network->addLayer(10, actFn);
+    network->addLayer(10, "Identity");
     //network->addLayer(10, actFn);
     network->addLayer(1);
     network->createSynapses();
+    //network->store("test.nn");
+    //network->load("test.nn");
+    //network->store("test2.nn");
+    //return 0;
 
     for (int i=0; i<200000; i++) {
         SNN::DoubleVector input = {
