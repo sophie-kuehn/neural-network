@@ -5,10 +5,17 @@
 #include <map>
 #include <string>
 
-#define AF_ID_IDENTITY "Identity"
-#define AF_ID_BOOLEAN "Boolean"
-#define AF_ID_SIGMOID "Sigmoid"
-#define AF_ID_HTANGENT "HTangent"
+#define SNN_AF_ID_IDENTITY "Identity"
+#define SNN_AF_ID_BOOLEAN "Boolean"
+#define SNN_AF_ID_SIGMOID "Sigmoid"
+#define SNN_AF_ID_HTANGENT "HTangent"
+
+#define SNN_NEURON_ID_DELIMITER '-'
+
+#define SNN_SAVE_COMMAND_ADD_NEURON "AN"
+#define SNN_SAVE_COMMAND_ADD_SYNAPSE "AS"
+#define SNN_SAVE_COMMAND_DELIMITER ';'
+#define SNN_SAVE_ARGUMENT_DELIMITER ','
 
 namespace SNN
 {
@@ -88,7 +95,6 @@ namespace SNN
         std::vector<Synapse*> inputSynapses;
         std::vector<Synapse*> outputSynapses;
         ActivationFunction* activationFunction = nullptr;
-        bool isBias = false;
         bool cacheValue = false;
         double value = 0;
         double smallDelta = 0;
@@ -105,11 +111,11 @@ namespace SNN
         Network(ActivationFunctionRegistry* afRegistry = nullptr);
         ActivationFunctionRegistry* afRegistry;
         std::vector<NeuronLayer> neurons;
-        Neuron* addNeuron(int layer, std::string activationFunctionId = AF_ID_IDENTITY);
+        Neuron* addNeuron(int layer, std::string activationFunctionId = SNN_AF_ID_IDENTITY);
         Neuron* getNeuron(std::string id);
         Synapse* addSynapse(Neuron* leftNeuron, Neuron* rightNeuron, double weight = 0.0);
         void initLayerUpTo(int layer);
-        void addLayer(int numberOfNeurons = 1, std::string activationFunctionId = AF_ID_IDENTITY);
+        void addLayer(int numberOfNeurons = 1, std::string activationFunctionId = SNN_AF_ID_IDENTITY);
         void store(std::string filePath);
         void load(std::string filePath);
         void createSynapses();

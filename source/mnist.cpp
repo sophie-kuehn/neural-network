@@ -56,6 +56,7 @@ namespace SNN
 
         for (int i = 0; i < this->digitsTest.size(); i++) {
             SNN::DoubleVector input;
+            input.push_back(1); // bias
 
             for (int x = 0; x < 28; x++) {
                 for (int y = 0; y < 28; y++) {
@@ -99,8 +100,8 @@ namespace SNN
         if (FileExists(networkSaveFilePath)) {
             this->network->load(networkSaveFilePath);
         } else {
-            this->network->addLayer(28*28);
-            this->network->addLayer(10, AF_ID_SIGMOID);
+            this->network->addLayer(1+(28*28));
+            this->network->addLayer(10, SNN_AF_ID_SIGMOID);
             this->network->createSynapses();
         }
 
@@ -110,9 +111,8 @@ namespace SNN
             std::cout << "train" << std::endl;
 
             for (int i = 0; i < digitsTrain.size(); i++) {
-                //std::cout << std::to_string(i+1) << "/" << std::to_string(digitsTrain.size()) << std::endl;
-
                 SNN::DoubleVector input;
+                input.push_back(1); // bias
 
                 for (int x = 0; x < 28; x++) {
                     for (int y = 0; y < 28; y++) {
@@ -127,7 +127,7 @@ namespace SNN
             }
 
             this->test();
-            //this->network->store(networkSaveFilePath);
+            this->network->store(networkSaveFilePath);
             epsilon *= 0.9;
         }
     };

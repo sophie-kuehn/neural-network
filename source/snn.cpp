@@ -47,7 +47,7 @@ namespace SNN
 
     std::string Identity::getId()
     {
-        return AF_ID_IDENTITY;
+        return SNN_AF_ID_IDENTITY;
     };
 
     double Identity::activate(double input)
@@ -62,7 +62,7 @@ namespace SNN
 
     std::string Boolean::getId()
     {
-        return AF_ID_BOOLEAN;
+        return SNN_AF_ID_BOOLEAN;
     };
 
     double Boolean::activate(double input)
@@ -78,7 +78,7 @@ namespace SNN
 
     std::string Sigmoid::getId()
     {
-        return AF_ID_SIGMOID;
+        return SNN_AF_ID_SIGMOID;
     };
 
     double Sigmoid::activate(double input)
@@ -94,7 +94,7 @@ namespace SNN
 
     std::string HyperbolicTangent::getId()
     {
-        return AF_ID_HTANGENT;
+        return SNN_AF_ID_HTANGENT;
     };
 
     double HyperbolicTangent::activate(double input)
@@ -148,7 +148,6 @@ namespace SNN
 
     double Neuron::getValue()
     {
-        if (this->isBias) return 1;
         if (this->isInput() || this->cacheValue) return this->value;
 
         double value = 0;
@@ -208,8 +207,9 @@ namespace SNN
         this->initLayerUpTo(layerId);
         auto neuron = new Neuron;
         neuron->activationFunction = this->afRegistry->get(activationFunctionId);
-        neuron->id = "N." + std::to_string(layerId) + "."
-            + std::to_string(this->neurons[layerId].size());
+        neuron->id = (std::string)"N"
+            + SNN_NEURON_ID_DELIMITER + std::to_string(layerId)
+            + SNN_NEURON_ID_DELIMITER + std::to_string(this->neurons[layerId].size());
         this->neurons[layerId].push_back(neuron);
         return neuron;
     };
@@ -242,20 +242,15 @@ namespace SNN
     {
         while (this->neurons.size() < layerId+1) {
             NeuronLayer layer;
-            auto neuron = new Neuron;
-            neuron->activationFunction = this->afRegistry->get(AF_ID_IDENTITY);
-            neuron->isBias = true;
-            neuron->id = "B." + std::to_string(layerId) + ".0";
-            layer.push_back(neuron);
             this->neurons.push_back(layer);
         }
     };
 
     void Network::addLayer(int numberOfNeurons, std::string activationFunctionId)
     {
-        int layer = this->neurons.size();
+        int layerId = this->neurons.size();
         for (int i = 0; i < numberOfNeurons; i++) {
-            this->addNeuron(layer, activationFunctionId);
+            this->addNeuron(layerId, activationFunctionId);
         }
     };
 
@@ -268,7 +263,6 @@ namespace SNN
             if (this->neurons.size()-1 < rightLayer) return;
             for (const auto& leftNeuron : leftNeurons) {
                 for (const auto& rightNeuron : this->neurons[rightLayer]) {
-                    if (rightNeuron->isBias) continue;
                     this->addSynapse(leftNeuron, rightNeuron, (rand() % 100) / 100.0);
                 }
             }
@@ -294,7 +288,6 @@ namespace SNN
 
         DoubleVector output;
         for (const auto& neuron : this->neurons.back()) {
-            if (neuron->isBias) continue;
             output.push_back(neuron->getValue());
         }
 
@@ -323,17 +316,24 @@ namespace SNN
             int nid = 0;
             for (const auto& neuron : neuronLayer) {
                 std::string neuronId = neuron->id;
-                std::replace(neuronId.begin(), neuronId.end(), '.', '-');
-                neuronSetup = neuronSetup + "AN-"
-                    + neuronId
-                    + "-" + neuron->activationFunction->getId()
-                    + ",\n";
+                std::replace(
+                    neuronId.begin(),
+                    neuronId.end(),
+                    SNN_NEURON_ID_DELIMITER,
+                    SNN_SAVE_ARGUMENT_DELIMITER
+                );
+
+                neuronSetup = neuronSetup + SNN_SAVE_COMMAND_ADD_NEURON
+                    + SNN_SAVE_ARGUMENT_DELIMITER + neuronId
+                    + SNN_SAVE_ARGUMENT_DELIMITER + neuron->activationFunction->getId()
+                    + SNN_SAVE_COMMAND_DELIMITER + "\n";
 
                 for (const auto& synapse : neuron->outputSynapses) {
-                    synapseSetup = synapseSetup + "AS-" + neuron->id
-                        + "-" + synapse->outputNeuron->id
-                        + "-" + std::to_string(synapse->weight)
-                        + ",\n";
+                    synapseSetup = synapseSetup + SNN_SAVE_COMMAND_ADD_SYNAPSE
+                        + SNN_SAVE_ARGUMENT_DELIMITER + neuron->id
+                        + SNN_SAVE_ARGUMENT_DELIMITER + synapse->outputNeuron->id
+                        + SNN_SAVE_ARGUMENT_DELIMITER + std::to_string(synapse->weight)
+                        + SNN_SAVE_COMMAND_DELIMITER + "\n";
                     nid++;
                 }
 
@@ -362,15 +362,15 @@ namespace SNN
         while (getline(file, line)) input = input + line;
         file.close();
 
-        StringVector commands = SplitString(input, ',');
+        StringVector commands = SplitString(input, SNN_SAVE_COMMAND_DELIMITER);
         for (const auto& command : commands) {
-            StringVector arguments = SplitString(command, '-');
-            if (arguments[0] == "AN" && arguments[1] != "B") {
+            StringVector arguments = SplitString(command, SNN_SAVE_ARGUMENT_DELIMITER);
+            if (arguments[0] == SNN_SAVE_COMMAND_ADD_NEURON) {
                 this->addNeuron(
                     std::atoi(arguments[2].c_str()),
                     arguments[4]
                 );
-            } else if (arguments[0] == "AS") {
+            } else if (arguments[0] == SNN_SAVE_COMMAND_ADD_SYNAPSE) {
                 Neuron* leftNeuron = this->getNeuron(arguments[1]);
                 Neuron* rightNeuron = this->getNeuron(arguments[2]);
                 this->addSynapse(
