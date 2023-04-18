@@ -42,7 +42,7 @@ namespace SNN
         Network* network = new Network;
 
         void test();
-        void execute(std::string mnistFilesRootPath);
+        void execute(std::string networkSaveFilePath, std::string mnistFilesRootPath);
     };
 };
 
