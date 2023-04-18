@@ -308,12 +308,9 @@ namespace SNN
 
     void Network::store(std::string filePath)
     {
-        std::string neuronSetup;
-        std::string synapseSetup;
+        std::string neuronSetup, synapseSetup;
 
-        int lid = 0;
         for (const auto& neuronLayer : this->neurons) {
-            int nid = 0;
             for (const auto& neuron : neuronLayer) {
                 std::string neuronId = neuron->id;
                 std::replace(
@@ -334,12 +331,8 @@ namespace SNN
                         + SNN_SAVE_ARGUMENT_DELIMITER + synapse->outputNeuron->id
                         + SNN_SAVE_ARGUMENT_DELIMITER + std::to_string(synapse->weight)
                         + SNN_SAVE_COMMAND_DELIMITER + "\n";
-                    nid++;
                 }
-
-                nid++;
             }
-            lid++;
         }
 
         std::ofstream file(filePath);
