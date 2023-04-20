@@ -11,6 +11,10 @@ A command line application/library/server that trains and runs artificial neural
 - split application into library + executable
 - add server mode
 
+## Usage
+
+Have a look into the examples in /tests
+
 ## Acknowledgment
 
 This is based on a wonderful tutorial by https://github.com/Brotcrunsher:  
