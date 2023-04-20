@@ -17,6 +17,11 @@
 #define SNN_SAVE_COMMAND_DELIMITER ';'
 #define SNN_SAVE_ARGUMENT_DELIMITER ','
 
+#define SNN_INPUT_DELIMITER_L1 ';'
+#define SNN_INPUT_DELIMITER_L2 ','
+
+#define SNN_DEFAULT_EPSILON 0.01
+
 namespace SNN
 {
     class Neuron;
@@ -25,10 +30,8 @@ namespace SNN
     typedef std::vector<double> DoubleVector;
     typedef std::vector<std::string> StringVector;
 
-    bool FileExists (const std::string path);
-    StringVector SplitString (const std::string &s, char delim);
-    void COutString(std::string str);
-    void COutDoubleVector(DoubleVector vector);
+    bool FileExists(const std::string path);
+    StringVector SplitString(const std::string &s, char delim);
 
     class ActivationFunction
     {
@@ -102,7 +105,7 @@ namespace SNN
         bool isInput();
         bool isOutput();
         double getValue();
-        void learn(double expectedValue, double epsilon = 0.01);
+        void learn(double expectedValue, double epsilon = SNN_DEFAULT_EPSILON);
     };
 
     class Network
@@ -118,8 +121,13 @@ namespace SNN
         void addLayer(int numberOfNeurons = 1, std::string activationFunctionId = SNN_AF_ID_IDENTITY);
         void store(std::string filePath);
         void load(std::string filePath);
+        void loadShort(std::string definition);
         void createSynapses();
-        DoubleVector process(DoubleVector input, DoubleVector expectedOutput = {}, double epsilon = 0.01);
+        DoubleVector process(
+            DoubleVector input,
+            DoubleVector expectedOutput = {},
+            double epsilon = SNN_DEFAULT_EPSILON
+        );
     };
 };
 

@@ -1,12 +1,17 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <stdexcept>
 #include "../header/mnist.hpp"
 
 namespace SNN
 {
     MNIST_DataSet MNIST_Decoder::loadDataSet(std::string dataPath, std::string labelPath)
     {
+        if (!SNN::FileExists(dataPath)) {
+            throw std::invalid_argument("file \"" + dataPath + "\" not found");
+        }
+
         MNIST_ByteVector dataBytes = this->readAllBytes(dataPath);
         MNIST_ByteVector labelBytes = this->readAllBytes(labelPath);
         MNIST_DataSet dataSet;

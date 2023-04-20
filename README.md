@@ -8,7 +8,6 @@ A command line application/library/server that trains and runs artificial neural
 
 ## ToDo for 1.0
 
-- turn into an actual, argumented command line application
 - split application into library + executable
 - add server mode
 

@@ -4,6 +4,7 @@
 #include <sstream>
 #include <algorithm>
 #include "../header/snn.hpp"
+#include "../header/sclt.hpp"
 
 namespace SNN
 {
@@ -28,21 +29,6 @@ namespace SNN
         }
 
         return result;
-    };
-
-    void COutString(std::string str)
-    {
-        std::cout << str << std::endl;
-    };
-
-    void COutDoubleVector(DoubleVector vector)
-    {
-        std::cout << "{ ";
-        for (int i = 0; i < vector.size(); i++) {
-            std::cout << std::to_string(vector[i]);
-            if (i < vector.size()-1) std::cout << ", ";
-        }
-        std::cout << " }" << std::endl;
     };
 
     std::string Identity::getId()
@@ -374,4 +360,19 @@ namespace SNN
             }
         }
     };
+
+    void Network::loadShort(std::string definition)
+    {
+        this->neurons.clear();
+
+        StringVector layers = SplitString(definition, SNN_INPUT_DELIMITER_L1);
+        for (const auto& layer : layers) {
+            StringVector arguments = SplitString(layer, SNN_INPUT_DELIMITER_L2);
+            if (arguments.size() < 1) arguments.push_back("1");
+            if (arguments.size() < 2) arguments.push_back(SNN_AF_ID_IDENTITY);
+            this->addLayer(std::stoi(arguments[0]), arguments[1]);
+        }
+
+        this->createSynapses();
+    }
 };
