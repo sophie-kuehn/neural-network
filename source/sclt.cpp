@@ -1,3 +1,4 @@
+#include <iostream>
 #include "../header/sclt.hpp"
 
 namespace SCLT
@@ -80,7 +81,7 @@ namespace SCLT
 
             if (option.shortOption == 'h') {
                 std::cout << this->getHelp(helpPadding) << std::endl;
-                exit(1);
+                exit(EXIT_FAILURE);
             }
 
             this->arguments[option.longOption] = option.requireArgument ? optarg : "1";
@@ -89,7 +90,7 @@ namespace SCLT
         for (const auto& option : options) {
             if (option.requireOption && !this->has(option.longOption)) {
                 std::cout << this->getHelp(helpPadding) << std::endl;
-                exit(1);
+                exit(EXIT_FAILURE);
             }
         }
     };
