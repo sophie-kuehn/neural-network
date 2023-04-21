@@ -60,7 +60,7 @@ namespace SNN
         float incorrect = 0;
 
         for (int i = 0; i < this->digitsTest.size(); i++) {
-            SNN::DoubleVector input;
+            SCLT::DoubleVector input;
             input.push_back(1); // bias
 
             for (int x = 0; x < 28; x++) {
@@ -69,7 +69,7 @@ namespace SNN
                 }
             }
 
-            DoubleVector output = network->process(input);
+            SCLT::DoubleVector output = network->process(input);
 
             MNIST_ProbabilityDigit probs[10];
             for (int k = 0; k < 10; k++) {
@@ -116,7 +116,7 @@ namespace SNN
             std::cout << "train" << std::endl;
 
             for (int i = 0; i < digitsTrain.size(); i++) {
-                SNN::DoubleVector input;
+                SCLT::DoubleVector input;
                 input.push_back(1); // bias
 
                 for (int x = 0; x < 28; x++) {
@@ -125,7 +125,7 @@ namespace SNN
                     }
                 }
 
-                SNN::DoubleVector expected = {0,0,0,0,0,0,0,0,0,0};
+                SCLT::DoubleVector expected = {0,0,0,0,0,0,0,0,0,0};
                 expected[digitsTrain[i].label] = 1;
 
                 network->process(input, expected, epsilon);

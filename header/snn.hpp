@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include "sclt.hpp"
 
 #define SNN_AF_ID_IDENTITY "Identity"
 #define SNN_AF_ID_BOOLEAN "Boolean"
@@ -14,11 +15,6 @@
 
 #define SNN_SAVE_COMMAND_ADD_NEURON "AN"
 #define SNN_SAVE_COMMAND_ADD_SYNAPSE "AS"
-#define SNN_SAVE_COMMAND_DELIMITER ';'
-#define SNN_SAVE_ARGUMENT_DELIMITER ','
-
-#define SNN_INPUT_DELIMITER_L1 ';'
-#define SNN_INPUT_DELIMITER_L2 ','
 
 #define SNN_DEFAULT_EPSILON 0.01
 
@@ -27,11 +23,8 @@ namespace SNN
     class Neuron;
 
     typedef std::vector<Neuron*> NeuronLayer;
-    typedef std::vector<double> DoubleVector;
-    typedef std::vector<std::string> StringVector;
 
     bool FileExists(const std::string path);
-    StringVector SplitString(const std::string &s, char delim);
 
     class ActivationFunction
     {
@@ -123,9 +116,9 @@ namespace SNN
         void load(std::string filePath);
         void loadShort(std::string definition);
         void createSynapses();
-        DoubleVector process(
-            DoubleVector input,
-            DoubleVector expectedOutput = {},
+        SCLT::DoubleVector process(
+            SCLT::DoubleVector input,
+            SCLT::DoubleVector expectedOutput = {},
             double epsilon = SNN_DEFAULT_EPSILON
         );
     };

@@ -2,9 +2,11 @@
 SCRIPT_DIR=$(realpath $(dirname "${BASH_SOURCE[0]}"))
 BUILD_DIR=$SCRIPT_DIR/../build
 
+FILE=$BUILD_DIR/mnist.nn
+
 if [ "$1" == "refresh" ]
 then
-    rm $BUILD_DIR/mnist.nn
+    rm $FILE
 fi
 
-$BUILD_DIR/neural-network --file $BUILD_DIR/mnist.nn -m $SCRIPT_DIR/../mnist-data
+$BUILD_DIR/neural-network --file $FILE -m $SCRIPT_DIR/../mnist-data

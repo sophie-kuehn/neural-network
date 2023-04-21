@@ -55,7 +55,8 @@ namespace STS
             }
 
             char buffer[STC_REQUEST_BUFFER_SIZE];
-            auto bytesRead = read(connection, buffer, STC_REQUEST_BUFFER_SIZE);
+            auto bytesRead = read(connection, buffer, sizeof(buffer));
+            if (bytesRead > 0) buffer[bytesRead] = '\0';
             auto request = new TcpRequest;
             request->body = buffer;
             auto response = this->processRequest(request);

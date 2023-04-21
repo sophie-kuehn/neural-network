@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <string>
-#include "../header/snn.hpp"
+#include "snn.hpp"
 
 namespace SNN
 {

@@ -1,17 +1,69 @@
 #include <iostream>
 #include "../header/sclt.hpp"
 
+#define SCLT_PARAM_BAG_L1_DELIMITER ';'
+#define SCLT_PARAM_BAG_L2_DELIMITER ','
+
 namespace SCLT
 {
-    void COutDoubleVector(DoubleVector vector, bool endl)
+    StringVector dvtosv(DoubleVector in)
     {
-        std::cout << "{ ";
-        for (int i = 0; i < vector.size(); i++) {
-            std::cout << std::to_string(vector[i]);
-            if (i < vector.size()-1) std::cout << ", ";
+        StringVector s;
+        for (const auto& d : in) s.push_back(std::to_string(d));
+        return s;
+    };
+
+    DoubleVector svtodv(StringVector in)
+    {
+        DoubleVector d;
+        for (const auto& s : in) {
+            double sd = 0;
+            try { sd = std::stod(s); } catch (...) {}
+            d.push_back(sd);
         }
-        std::cout << " }" << std::flush;
-        if (endl) std::cout << std::endl;
+        return d;
+    };
+
+    StringVector SplitString(const std::string &s, char delim)
+    {
+        StringVector result;
+        std::stringstream ss(s);
+        std::string item;
+
+        while (getline(ss, item, delim)) {
+            result.push_back(item);
+        }
+
+        return result;
+    };
+
+    ParamBag DecodeParamBag(std::string in, char l1delim, char l2delim)
+    {
+        ParamBag bag;
+        StringVector l1 = SplitString(in, l1delim);
+        for (const auto& l1in : l1) {
+            bag.push_back({});
+            StringVector l2 = SplitString(l1in, l2delim);
+            for (const auto& l2in : l2) {
+                if (l2in.size() > 0) bag.back().push_back(l2in);
+            }
+        }
+        return bag;
+    }
+
+    std::string EncodeParamBag(ParamBag in, char l1delim, char l2delim)
+    {
+        std::string out;
+        for (const auto& l1 : in) {
+            std::string l2out;
+            for (const auto& l2 : l1) {
+                if (l2out.size() != 0) l2out += l2delim;
+                l2out += l2;
+            }
+            if (out.size() != 0) out += l1delim;
+            out += l2out;
+        }
+        return out;
     };
 
     std::string CliArguments::getShortOptions()
@@ -103,5 +155,18 @@ namespace SCLT
     std::string CliArguments::get(std::string option)
     {
         return this->arguments[option];
+    };
+
+    void CliArguments::set(std::string option, std::string value)
+    {
+        this->arguments[option] = value;
+    };
+
+    void CliArguments::unset(std::string option)
+    {
+        auto iterator = this->arguments.find(option);
+        if (iterator != this->arguments.end()) {
+            this->arguments.erase(iterator);
+        }
     };
 }

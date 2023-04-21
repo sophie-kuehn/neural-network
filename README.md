@@ -9,7 +9,6 @@ A command line application/library/server that trains and runs artificial neural
 ## ToDo for 1.0
 
 - split application into library + executable
-- add server mode
 
 ## Acknowledgment
 

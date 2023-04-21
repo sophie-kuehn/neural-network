@@ -6,11 +6,32 @@
 #include <map>
 #include <string>
 
+#define SCLT_PARAM_BAG_L1_DELIMITER ';'
+#define SCLT_PARAM_BAG_L2_DELIMITER ','
+
 namespace SCLT
 {
     typedef std::vector<double> DoubleVector;
+    typedef std::vector<std::string> StringVector;
+    typedef std::map<std::string, std::string> StringMap;
+    typedef std::vector<StringVector> ParamBag;
 
-    void COutDoubleVector(DoubleVector vector, bool endl = true);
+    StringVector SplitString(const std::string &s, char delim);
+
+    StringVector dvtosv(DoubleVector in);
+    DoubleVector svtodv(StringVector in);
+
+    ParamBag DecodeParamBag(
+        std::string in,
+        char l1delim = SCLT_PARAM_BAG_L1_DELIMITER,
+        char l2delim = SCLT_PARAM_BAG_L2_DELIMITER
+    );
+
+    std::string EncodeParamBag(
+        ParamBag in,
+        char l1delim = SCLT_PARAM_BAG_L1_DELIMITER,
+        char l2delim = SCLT_PARAM_BAG_L2_DELIMITER
+    );
 
     struct CliOption {
         char shortOption;
@@ -20,7 +41,6 @@ namespace SCLT
         bool requireOption = false;
     };
 
-    typedef std::map<std::string, std::string> StringMap;
     typedef std::vector<CliOption> CliOptionSet;
 
     class CliArguments {
@@ -33,6 +53,8 @@ namespace SCLT
         std::string getHelp(int padding = 30);
         bool has(std::string option);
         std::string get(std::string option);
+        void set(std::string option, std::string value);
+        void unset(std::string option);
     };
 }
 

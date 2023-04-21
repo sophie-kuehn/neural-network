@@ -1,4 +1,3 @@
-#include <iostream>
 #include "snn.cpp"
 #include "mnist.cpp"
 #include "sclt.cpp"

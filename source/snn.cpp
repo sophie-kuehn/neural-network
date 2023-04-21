@@ -18,19 +18,6 @@ namespace SNN
         return false;
     };
 
-    StringVector SplitString(const std::string &s, char delim)
-    {
-        StringVector result;
-        std::stringstream ss(s);
-        std::string item;
-
-        while (getline(ss, item, delim)) {
-            result.push_back(item);
-        }
-
-        return result;
-    };
-
     std::string Identity::getId()
     {
         return SNN_AF_ID_IDENTITY;
@@ -202,7 +189,7 @@ namespace SNN
 
     Neuron* Network::getNeuron(std::string id)
     {
-        StringVector query = SplitString(id, '.');
+        SCLT::StringVector query = SCLT::SplitString(id, '.');
 
         for (const auto& neuronLayer : this->neurons) {
             for (const auto& neuron : neuronLayer) {
@@ -256,7 +243,11 @@ namespace SNN
         }
     };
 
-    DoubleVector Network::process(DoubleVector input, DoubleVector expectedOutput, double epsilon)
+    SCLT::DoubleVector Network::process(
+        SCLT::DoubleVector input,
+        SCLT::DoubleVector expectedOutput,
+        double epsilon
+    )
     {
         for (const auto& neurons : this->neurons) {
             for (const auto& neuron : neurons) {
@@ -272,7 +263,7 @@ namespace SNN
             index++;
         }
 
-        DoubleVector output;
+        SCLT::DoubleVector output;
         for (const auto& neuron : this->neurons.back()) {
             output.push_back(neuron->getValue());
         }
@@ -295,6 +286,7 @@ namespace SNN
     void Network::store(std::string filePath)
     {
         std::string neuronSetup, synapseSetup;
+        SCLT::ParamBag cmdBag, synapseCmdBag;
 
         for (const auto& neuronLayer : this->neurons) {
             for (const auto& neuron : neuronLayer) {
@@ -303,29 +295,34 @@ namespace SNN
                     neuronId.begin(),
                     neuronId.end(),
                     SNN_NEURON_ID_DELIMITER,
-                    SNN_SAVE_ARGUMENT_DELIMITER
+                    SCLT_PARAM_BAG_L2_DELIMITER
                 );
 
-                neuronSetup = neuronSetup + SNN_SAVE_COMMAND_ADD_NEURON
-                    + SNN_SAVE_ARGUMENT_DELIMITER + neuronId
-                    + SNN_SAVE_ARGUMENT_DELIMITER + neuron->activationFunction->getId()
-                    + SNN_SAVE_COMMAND_DELIMITER + "\n";
+                SCLT::StringVector command;
+                command.push_back(SNN_SAVE_COMMAND_ADD_NEURON);
+                command.push_back(neuronId);
+                command.push_back(neuron->activationFunction->getId());
+                cmdBag.push_back(command);
 
                 for (const auto& synapse : neuron->outputSynapses) {
-                    synapseSetup = synapseSetup + SNN_SAVE_COMMAND_ADD_SYNAPSE
-                        + SNN_SAVE_ARGUMENT_DELIMITER + neuron->id
-                        + SNN_SAVE_ARGUMENT_DELIMITER + synapse->outputNeuron->id
-                        + SNN_SAVE_ARGUMENT_DELIMITER + std::to_string(synapse->weight)
-                        + SNN_SAVE_COMMAND_DELIMITER + "\n";
+                    SCLT::StringVector command;
+                    command.push_back(SNN_SAVE_COMMAND_ADD_SYNAPSE);
+                    command.push_back(neuron->id);
+                    command.push_back(synapse->outputNeuron->id);
+                    command.push_back(std::to_string(synapse->weight));
+                    synapseCmdBag.push_back(command);
                 }
             }
         }
+
+        cmdBag.insert(cmdBag.end(), synapseCmdBag.begin(), synapseCmdBag.end());
+        auto out = SCLT::EncodeParamBag(cmdBag);
 
         std::ofstream file(filePath);
         if (!file.is_open()) {
             throw std::invalid_argument("could not open file \"" + filePath + "\"");
         }
-        file << neuronSetup + synapseSetup;
+        file << out;
         file.close();
     };
 
@@ -341,9 +338,8 @@ namespace SNN
         while (getline(file, line)) input = input + line;
         file.close();
 
-        StringVector commands = SplitString(input, SNN_SAVE_COMMAND_DELIMITER);
-        for (const auto& command : commands) {
-            StringVector arguments = SplitString(command, SNN_SAVE_ARGUMENT_DELIMITER);
+        auto commands = SCLT::DecodeParamBag(input);
+        for (const auto& arguments : commands) {
             if (arguments[0] == SNN_SAVE_COMMAND_ADD_NEURON) {
                 this->addNeuron(
                     std::atoi(arguments[2].c_str()),
@@ -365,12 +361,11 @@ namespace SNN
     {
         this->neurons.clear();
 
-        StringVector layers = SplitString(definition, SNN_INPUT_DELIMITER_L1);
-        for (const auto& layer : layers) {
-            StringVector arguments = SplitString(layer, SNN_INPUT_DELIMITER_L2);
-            if (arguments.size() < 1) arguments.push_back("1");
-            if (arguments.size() < 2) arguments.push_back(SNN_AF_ID_IDENTITY);
-            this->addLayer(std::stoi(arguments[0]), arguments[1]);
+        auto layers = SCLT::DecodeParamBag(definition);
+        for (auto& args : layers) {
+            if (args.size() < 1) args.push_back("1");
+            if (args.size() < 2) args.push_back(SNN_AF_ID_IDENTITY);
+            this->addLayer(std::stoi(args[0]), args[1]);
         }
 
         this->createSynapses();

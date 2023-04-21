@@ -2,29 +2,35 @@
 SCRIPT_DIR=$(realpath $(dirname "${BASH_SOURCE[0]}"))
 BUILD_DIR=$SCRIPT_DIR/../build
 
+FILE=$BUILD_DIR/test.nn
+EPSILON=0.0001
+NETWORK="3;10,Identity;1"
+BATCHES=1000
+CHECKS_PER_BATCH=10
+
 if [ "$1" == "refresh" ]
 then
-    rm $BUILD_DIR/test.nn
+    rm $FILE
 fi
 
-$BUILD_DIR/neural-network --file $BUILD_DIR/test.nn --network "3;10,Identity;1"
+$BUILD_DIR/neural-network --file $FILE --network "$NETWORK"
 
-epsilon=0.0001
-
-for i in {1..1000}
+for i in $( seq 1 $BATCHES )
 do
-    input="1,1,1"
-    expected="3"
+    INPUT="1,1,1"
+    EXPECTED="3"
 
-    for i in {1..10}
+    for i in $( seq 1 $CHECKS_PER_BATCH )
     do
         a=$(( $RANDOM % 10 + 1 ))
         b=$(( $RANDOM % 10 + 1 ))
         c=$(( $RANDOM % 10 + 1 ))
         d=$(( $a+$b+$c ))
-        input="$input;$a,$b,$c"
-        expected="$expected;$d"
+        INPUT="$INPUT;$a,$b,$c"
+        EXPECTED="$EXPECTED;$d"
     done
 
-    $BUILD_DIR/neural-network --file $BUILD_DIR/test.nn --input "$input" --expected "$expected" -p $epsilon
+    $BUILD_DIR/neural-network --file $FILE --input "$INPUT" --expected "$EXPECTED" -p $EPSILON
 done
+
+$BUILD_DIR/neural-network --file $FILE --input "1,1,1"
