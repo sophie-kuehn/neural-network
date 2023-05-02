@@ -1,9 +1,6 @@
 #include <iostream>
 #include "../header/sclt.hpp"
 
-#define SCLT_PARAM_BAG_L1_DELIMITER ';'
-#define SCLT_PARAM_BAG_L2_DELIMITER ','
-
 namespace SCLT
 {
     StringVector dvtosv(DoubleVector in)
@@ -37,34 +34,96 @@ namespace SCLT
         return result;
     };
 
-    ParamBag DecodeParamBag(std::string in, char l1delim, char l2delim)
+    void PBag::insert(std::string value)
     {
-        ParamBag bag;
-        StringVector l1 = SplitString(in, l1delim);
-        for (const auto& l1in : l1) {
-            bag.push_back({});
-            StringVector l2 = SplitString(l1in, l2delim);
-            for (const auto& l2in : l2) {
-                if (l2in.size() > 0) bag.back().push_back(l2in);
-            }
+        this->children.push_back(PBag {value});
+    };
+
+    void PBag::insert(PBag children)
+    {
+        this->children.push_back(children);
+    };
+
+    void PBag::insert(StringVector values)
+    {
+        PBag n;
+        for (const auto& v : values) n.insert(v);
+        this->children.push_back(n);
+    };
+
+    StringVector PBag::toStringVector()
+    {
+        StringVector s;
+        for (const auto& c : this->children) s.push_back(c.value);
+        return s;
+    };
+
+    DoubleVector PBag::toDoubleVector()
+    {
+        DoubleVector d;
+        for (const auto& c : this->children) {
+            double sd = 0;
+            try { sd = std::stod(c.value); } catch (...) {}
+            d.push_back(sd);
         }
-        return bag;
+        return d;
+    };
+
+    std::string PBag::toString(CharVector delimiterList)
+    {
+        char delimiter = delimiterList[0];
+        delimiterList.erase(delimiterList.begin());
+        if (delimiterList.size() == 0) {
+            delimiterList.push_back('\0');
+        }
+
+        std::string str = this->value;
+
+        bool first = true;
+        for (auto& children : this->children) {
+            if (!first) str += delimiter;
+            first = false;
+            str += children.toString(delimiterList);
+        }
+        return str;
+    };
+
+    PBag PBag::fromString(std::string input, CharVector delimiterList)
+    {
+        PBag result;
+
+        if (delimiterList.size() == 0) {
+            result.value = input;
+            return result;
+        }
+
+        char delimiter = delimiterList[0];
+        delimiterList.erase(delimiterList.begin());
+
+        StringVector v = SplitString(input, delimiter);
+        for (const auto& s : v) {
+            result.insert(fromString(s, delimiterList));
+        }
+
+        return result;
+    };
+
+    int PBag::size()
+    {
+        return this->children.size();
+    };
+
+    PBag PBag::operator[](int key)
+    {
+        return this->children[key];
     }
 
-    std::string EncodeParamBag(ParamBag in, char l1delim, char l2delim)
-    {
-        std::string out;
-        for (const auto& l1 : in) {
-            std::string l2out;
-            for (const auto& l2 : l1) {
-                if (l2out.size() != 0) l2out += l2delim;
-                l2out += l2;
-            }
-            if (out.size() != 0) out += l1delim;
-            out += l2out;
-        }
-        return out;
-    };
+    std::vector<PBag>::iterator PBag::begin() { return this->children.begin(); }
+    std::vector<PBag>::iterator PBag::end() { return this->children.end(); }
+    std::vector<PBag>::const_iterator PBag::cbegin() const { return this->children.begin(); }
+    std::vector<PBag>::const_iterator PBag::cend() const { return this->children.end(); }
+    std::vector<PBag>::const_iterator PBag::begin() const { return this->children.begin(); }
+    std::vector<PBag>::const_iterator PBag::end() const { return this->children.end(); }
 
     std::string CliArguments::getShortOptions()
     {

@@ -34,19 +34,19 @@ namespace SNN
 
         auto checks = this->app->process();
 
-        for (const auto& check : checks) {
-            response->body += CheckToString(check) + "\n";
+        for (auto& check : checks) {
+            response->body += check.toString() + "\n";
         }
     };
 
-    std::string CheckToString(Check check)
+    std::string Check::toString()
     {
-        SCLT::ParamBag outputBag;
-        outputBag.push_back(SCLT::dvtosv(check.input));
-        outputBag.push_back(SCLT::dvtosv(check.expected));
-        outputBag.push_back({std::to_string(check.epsilon)});
-        outputBag.push_back(SCLT::dvtosv(check.output));
-        return SCLT::EncodeParamBag(outputBag);
+        SCLT::PBag outputBag;
+        outputBag.insert(SCLT::dvtosv(this->input));
+        outputBag.insert(SCLT::dvtosv(this->expected));
+        outputBag.insert({std::to_string(this->epsilon)});
+        outputBag.insert(SCLT::dvtosv(this->output));
+        return outputBag.toString(SCLT_PBAG_2_DELIMITER);
     };
 
     int CliApp::main(int argc, char **argv)
@@ -58,6 +58,7 @@ namespace SNN
             {'i', "input", "input (e.g. \"1,1,1;2,2,2;3,3,3\")", true},
             {'e', "expected", "expected output (e.g. \"3;6;9\")", true},
             {'p', "epsilon", "epsilon value for training (default 0.01)", true},
+            //{'s', "checks", "checks to run (e.g. \"1,1,1;3;0.01\")", true},
             {'m', "mnist", "specify data directory to run MNIST test", true},
             {'s', "server", "specify port to run in server mode", true},
             {'h', "help", "blubb"}
@@ -100,8 +101,8 @@ namespace SNN
 
             auto checks = this->process();
 
-            for (const auto& check : checks) {
-                std::cout << CheckToString(check) << std::endl;
+            for (auto& check : checks) {
+                std::cout << check.toString() << std::endl;
             }
 
         } catch (std::exception& e) {
@@ -122,22 +123,28 @@ namespace SNN
         }
 
         if (this->arguments->has("input")) {
-            auto inputBag = SCLT::DecodeParamBag(this->arguments->get("input"));
+            auto inputBag = SCLT::PBag::fromString(
+                this->arguments->get("input"),
+                SCLT_PBAG_2_DELIMITER
+            );
 
-            for (const auto& inputTmp : inputBag) {
+            for (auto& inputTmp : inputBag) {
                 Check check;
                 check.epsilon = epsilon;
-                check.input = SCLT::svtodv(inputTmp);
+                check.input = inputTmp.toDoubleVector();
                 checks.push_back(check);
             }
         }
 
         if (this->arguments->has("expected")) {
-            auto expectedBag = SCLT::DecodeParamBag(this->arguments->get("expected"));
+            auto expectedBag = SCLT::PBag::fromString(
+                this->arguments->get("expected"),
+                SCLT_PBAG_2_DELIMITER
+            );
 
             int i = 0;
-            for (const auto& expectedTmp : expectedBag) {
-                checks[i].expected = SCLT::svtodv(expectedTmp);
+            for (auto& expectedTmp : expectedBag) {
+                checks[i].expected = expectedTmp.toDoubleVector();
                 i++;
             }
         }

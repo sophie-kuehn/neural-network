@@ -286,7 +286,7 @@ namespace SNN
     void Network::store(std::string filePath)
     {
         std::string neuronSetup, synapseSetup;
-        SCLT::ParamBag cmdBag, synapseCmdBag;
+        SCLT::PBag cmdBag, synapseCmdBag;
 
         for (const auto& neuronLayer : this->neurons) {
             for (const auto& neuron : neuronLayer) {
@@ -298,25 +298,25 @@ namespace SNN
                     SCLT_PARAM_BAG_L2_DELIMITER
                 );
 
-                SCLT::StringVector command;
-                command.push_back(SNN_SAVE_COMMAND_ADD_NEURON);
-                command.push_back(neuronId);
-                command.push_back(neuron->activationFunction->getId());
-                cmdBag.push_back(command);
+                SCLT::PBag command;
+                command.insert(SNN_SAVE_COMMAND_ADD_NEURON);
+                command.insert(neuronId);
+                command.insert(neuron->activationFunction->getId());
+                cmdBag.insert(command);
 
                 for (const auto& synapse : neuron->outputSynapses) {
-                    SCLT::StringVector command;
-                    command.push_back(SNN_SAVE_COMMAND_ADD_SYNAPSE);
-                    command.push_back(neuron->id);
-                    command.push_back(synapse->outputNeuron->id);
-                    command.push_back(std::to_string(synapse->weight));
-                    synapseCmdBag.push_back(command);
+                    SCLT::PBag command;
+                    command.insert(SNN_SAVE_COMMAND_ADD_SYNAPSE);
+                    command.insert(neuron->id);
+                    command.insert(synapse->outputNeuron->id);
+                    command.insert(std::to_string(synapse->weight));
+                    synapseCmdBag.insert(command);
                 }
             }
         }
 
-        cmdBag.insert(cmdBag.end(), synapseCmdBag.begin(), synapseCmdBag.end());
-        auto out = SCLT::EncodeParamBag(cmdBag);
+        std::string out = cmdBag.toString(SCLT_PBAG_2_DELIMITER)
+            + ";" + synapseCmdBag.toString(SCLT_PBAG_2_DELIMITER);
 
         std::ofstream file(filePath);
         if (!file.is_open()) {
@@ -338,20 +338,20 @@ namespace SNN
         while (getline(file, line)) input = input + line;
         file.close();
 
-        auto commands = SCLT::DecodeParamBag(input);
-        for (const auto& arguments : commands) {
-            if (arguments[0] == SNN_SAVE_COMMAND_ADD_NEURON) {
+        auto commands = SCLT::PBag::fromString(input, SCLT_PBAG_2_DELIMITER);
+        for (auto& arguments : commands) {
+            if (arguments[0].value == SNN_SAVE_COMMAND_ADD_NEURON) {
                 this->addNeuron(
-                    std::atoi(arguments[2].c_str()),
-                    arguments[4]
+                    std::atoi(arguments[2].value.c_str()),
+                    arguments[4].value
                 );
-            } else if (arguments[0] == SNN_SAVE_COMMAND_ADD_SYNAPSE) {
-                Neuron* leftNeuron = this->getNeuron(arguments[1]);
-                Neuron* rightNeuron = this->getNeuron(arguments[2]);
+            } else if (arguments[0].value == SNN_SAVE_COMMAND_ADD_SYNAPSE) {
+                Neuron* leftNeuron = this->getNeuron(arguments[1].value);
+                Neuron* rightNeuron = this->getNeuron(arguments[2].value);
                 this->addSynapse(
                     leftNeuron,
                     rightNeuron,
-                    std::stod(arguments[3])
+                    std::stod(arguments[3].value)
                 );
             }
         }
@@ -361,11 +361,11 @@ namespace SNN
     {
         this->neurons.clear();
 
-        auto layers = SCLT::DecodeParamBag(definition);
+        auto layers = SCLT::PBag::fromString(definition, SCLT_PBAG_2_DELIMITER);
         for (auto& args : layers) {
-            if (args.size() < 1) args.push_back("1");
-            if (args.size() < 2) args.push_back(SNN_AF_ID_IDENTITY);
-            this->addLayer(std::stoi(args[0]), args[1]);
+            if (args.size() < 1) args.insert("1");
+            if (args.size() < 2) args.insert(SNN_AF_ID_IDENTITY);
+            this->addLayer(std::stoi(args[0].value), args[1].value);
         }
 
         this->createSynapses();

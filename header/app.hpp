@@ -9,17 +9,17 @@
 
 namespace SNN
 {
-    struct Check
+    class Check
     {
+    public:
         SCLT::DoubleVector input;
         SCLT::DoubleVector expected;
         SCLT::DoubleVector output;
         double epsilon = SNN_DEFAULT_EPSILON;
+        std::string toString();
     };
 
     typedef std::vector<Check> Checks;
-
-    std::string CheckToString(Check check);
 
     class CliApp
     {
