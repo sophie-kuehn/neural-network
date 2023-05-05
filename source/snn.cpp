@@ -1,23 +1,11 @@
 #include <cmath>
 #include <stdexcept>
-#include <fstream>
-#include <sstream>
 #include <algorithm>
+#include <time.h>
 #include "../header/snn.hpp"
-#include "../header/sclt.hpp"
 
 namespace SNN
 {
-    bool FileExists(const std::string path)
-    {
-        std::ifstream file(path);
-        if (file.is_open()) {
-            file.close();
-            return true;
-        }
-        return false;
-    };
-
     std::string Identity::getId()
     {
         return SNN_AF_ID_IDENTITY;
@@ -318,25 +306,13 @@ namespace SNN
         std::string out = cmdBag.toString(SCLT_PBAG_2_DELIMITER)
             + ";" + synapseCmdBag.toString(SCLT_PBAG_2_DELIMITER);
 
-        std::ofstream file(filePath);
-        if (!file.is_open()) {
-            throw std::invalid_argument("could not open file \"" + filePath + "\"");
-        }
-        file << out;
-        file.close();
+        SCLT::WriteToFile(filePath, out);
     };
 
     void Network::load(std::string filePath)
     {
         this->neurons.clear();
-
-        std::string input, line;
-        std::ifstream file(filePath);
-        if (!file.is_open()) {
-            throw std::invalid_argument("could not open file \"" + filePath + "\"");
-        }
-        while (getline(file, line)) input = input + line;
-        file.close();
+        std::string input = SCLT::ReadFromFile(filePath);
 
         auto commands = SCLT::PBag::fromString(input, SCLT_PBAG_2_DELIMITER);
         for (auto& arguments : commands) {

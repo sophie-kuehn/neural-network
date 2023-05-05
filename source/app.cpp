@@ -3,7 +3,6 @@
 #include "../header/app.hpp"
 #include "../header/snn.hpp"
 #include "../header/sclt.hpp"
-#include "../header/mnist.hpp"
 #include "../header/sts.hpp"
 
 namespace SNN
@@ -13,27 +12,8 @@ namespace SNN
         STS::TcpResponse* response
     )
     {
-        auto requestArgs = SCLT::SplitString(
-            request->body,
-            '_'
-        );
-
-        this->app->arguments->set("input", requestArgs[0]);
-
-        if (requestArgs.size() > 1) {
-            this->app->arguments->set("expected", requestArgs[1]);
-        } else {
-            this->app->arguments->unset("expected");
-        }
-
-        if (requestArgs.size() > 2) {
-            this->app->arguments->set("epsilon", requestArgs[2]);
-        } else {
-            this->app->arguments->unset("epsilon");
-        }
-
+        this->app->arguments->set("checks", request->body);
         auto checks = this->app->process();
-
         for (auto& check : checks) {
             response->body += check.toString() + "\n";
         }
@@ -55,28 +35,14 @@ namespace SNN
         this->arguments = new SCLT::CliArguments(argc, argv, {
             {'f', "file", "file for storing network", true},
             {'n', "network", "network definition (e.g. \"3;10,sigmoid;1\"; not used when --file exists!)", true},
-            {'i', "input", "input (e.g. \"1,1,1;2,2,2;3,3,3\")", true},
-            {'e', "expected", "expected output (e.g. \"3;6;9\")", true},
-            {'p', "epsilon", "epsilon value for training (default 0.01)", true},
-            //{'s', "checks", "checks to run (e.g. \"1,1,1;3;0.01\")", true},
-            {'m', "mnist", "specify data directory to run MNIST test", true},
+            {'c', "checks", "checks to run (e.g. \"1,1,1;3;0.01_1,2,3;6:0.01\")", true},
             {'s', "server", "specify port to run in server mode", true},
             {'h', "help", "blubb"}
         }, 25);
 
         try {
-            if (this->arguments->has("mnist")) {
-                if (!this->arguments->has("file")) {
-                    throw std::invalid_argument("you have to provide --file");
-                }
-
-                auto MNIST = new MNIST_Test;
-                MNIST->execute(this->arguments->get("file"), this->arguments->get("mnist") + "/");
-                return 0;
-            }
-
             if (this->arguments->has("file")
-                && FileExists(this->arguments->get("file"))
+                && SCLT::FileExists(this->arguments->get("file"))
             ) {
                 this->network->load(this->arguments->get("file"));
 
@@ -117,35 +83,28 @@ namespace SNN
     {
         Checks checks;
 
-        double epsilon = SNN_DEFAULT_EPSILON;
-        if (this->arguments->has("epsilon")) {
-            epsilon = std::stod(this->arguments->get("epsilon"));
-        }
-
-        if (this->arguments->has("input")) {
-            auto inputBag = SCLT::PBag::fromString(
-                this->arguments->get("input"),
-                SCLT_PBAG_2_DELIMITER
+        if (this->arguments->has("checks")) {
+            auto checksInput = SCLT::PBag::fromString(
+                this->arguments->get("checks"),
+                SCLT_PBAG_3_DELIMITER
             );
 
-            for (auto& inputTmp : inputBag) {
+            for (auto& checkInput : checksInput) {
                 Check check;
-                check.epsilon = epsilon;
-                check.input = inputTmp.toDoubleVector();
+                check.epsilon = SNN_DEFAULT_EPSILON;
+
+                if (checkInput.size() < 1) continue;
+                check.input = checkInput[0].toDoubleVector();
+
+                if (checkInput.size() > 1) {
+                    check.expected = checkInput[1].toDoubleVector();
+                }
+
+                if (checkInput.size() > 2) {
+                    check.epsilon = std::stod(checkInput[2][0].value);
+                }
+
                 checks.push_back(check);
-            }
-        }
-
-        if (this->arguments->has("expected")) {
-            auto expectedBag = SCLT::PBag::fromString(
-                this->arguments->get("expected"),
-                SCLT_PBAG_2_DELIMITER
-            );
-
-            int i = 0;
-            for (auto& expectedTmp : expectedBag) {
-                checks[i].expected = expectedTmp.toDoubleVector();
-                i++;
             }
         }
 

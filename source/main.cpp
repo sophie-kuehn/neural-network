@@ -1,8 +1,4 @@
-#include "snn.cpp"
-#include "mnist.cpp"
-#include "sclt.cpp"
-#include "app.cpp"
-#include "sts.cpp"
+#include "../header/app.hpp"
 
 int main(int argc, char **argv)
 {

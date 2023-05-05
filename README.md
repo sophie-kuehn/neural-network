@@ -2,13 +2,10 @@
 
 A command line application/library/server that trains and runs artificial neural networks.
 
-```diff
-- THIS IS A PROTOTYPE and does not yet include all the designated features!
-```
-
-## ToDo for 1.0
+## Ideas for future
 
 - split application into library + executable
+- make server handle multiple networks
 
 ## Acknowledgment
 

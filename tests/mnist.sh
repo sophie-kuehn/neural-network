@@ -9,4 +9,4 @@ then
     rm $FILE
 fi
 
-$BUILD_DIR/neural-network --file $FILE -m $SCRIPT_DIR/../mnist-data
+$BUILD_DIR/mnist-test --file $FILE -m $SCRIPT_DIR/../mnist-data

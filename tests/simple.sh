@@ -17,8 +17,7 @@ $BUILD_DIR/neural-network --file $FILE --network "$NETWORK"
 
 for i in $( seq 1 $BATCHES )
 do
-    INPUT="1,1,1"
-    EXPECTED="3"
+    CHECKS="1,1,1;3;$EPSILON"
 
     for i in $( seq 1 $CHECKS_PER_BATCH )
     do
@@ -26,11 +25,10 @@ do
         b=$(( $RANDOM % 10 + 1 ))
         c=$(( $RANDOM % 10 + 1 ))
         d=$(( $a+$b+$c ))
-        INPUT="$INPUT;$a,$b,$c"
-        EXPECTED="$EXPECTED;$d"
+        CHECKS="${CHECKS}_$a,$b,$c;$d;$EPSILON"
     done
 
-    $BUILD_DIR/neural-network --file $FILE --input "$INPUT" --expected "$EXPECTED" -p $EPSILON
+    $BUILD_DIR/neural-network --file $FILE --checks "$CHECKS"
 done
 
-$BUILD_DIR/neural-network --file $FILE --input "1,1,1"
+$BUILD_DIR/neural-network --file $FILE --checks "1,1,1"

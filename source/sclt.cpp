@@ -1,8 +1,42 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include "../header/sclt.hpp"
 
 namespace SCLT
 {
+    bool FileExists(const std::string path)
+    {
+        std::ifstream file(path);
+        if (file.is_open()) {
+            file.close();
+            return true;
+        }
+        return false;
+    };
+
+    void WriteToFile(std::string path, std::string contents)
+    {
+        std::ofstream file(path);
+        if (!file.is_open()) {
+            throw std::invalid_argument("could not open file \"" + path + "\"");
+        }
+        file << contents;
+        file.close();
+    };
+
+    std::string ReadFromFile(std::string path)
+    {
+        std::string input, line;
+        std::ifstream file(path);
+        if (!file.is_open()) {
+            throw std::invalid_argument("could not open file \"" + path + "\"");
+        }
+        while (getline(file, line)) input = input + line;
+        file.close();
+        return input;
+    };
+
     StringVector dvtosv(DoubleVector in)
     {
         StringVector s;

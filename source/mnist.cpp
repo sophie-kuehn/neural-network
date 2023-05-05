@@ -8,7 +8,7 @@ namespace SNN
 {
     MNIST_DataSet MNIST_Decoder::loadDataSet(std::string dataPath, std::string labelPath)
     {
-        if (!SNN::FileExists(dataPath)) {
+        if (!SCLT::FileExists(dataPath)) {
             throw std::invalid_argument("file \"" + dataPath + "\" not found");
         }
 
@@ -102,7 +102,7 @@ namespace SNN
             mnistFilesRootPath + "t10k-labels.idx1-ubyte"
         );
 
-        if (FileExists(networkSaveFilePath)) {
+        if (SCLT::FileExists(networkSaveFilePath)) {
             this->network->load(networkSaveFilePath);
         } else {
             this->network->addLayer(1+(28*28));
@@ -136,4 +136,19 @@ namespace SNN
             epsilon *= 0.9;
         }
     };
+};
+
+int main(int argc, char **argv)
+{
+    SCLT::CliArguments* arguments;
+    arguments = new SCLT::CliArguments(argc, argv, {
+        {'f', "file", "file for storing network", true},
+        {'m', "mnist", "specify data directory to run MNIST test", true}
+    }, 25);
+    if (!arguments->has("file")) {
+        throw std::invalid_argument("you have to provide --file");
+    }
+    auto MNIST = new SNN::MNIST_Test;
+    MNIST->execute(arguments->get("file"), arguments->get("mnist") + "/");
+    return 0;
 };

@@ -25,6 +25,10 @@ namespace SCLT
     StringVector dvtosv(DoubleVector in);
     DoubleVector svtodv(StringVector in);
 
+    bool FileExists(const std::string path);
+    void WriteToFile(std::string path, std::string contents);
+    std::string ReadFromFile(std::string path);
+
     class PBag
     {
     public:

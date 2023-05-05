@@ -21,8 +21,7 @@ sleep 1
 
 for i in $( seq 1 $BATCHES )
 do
-    INPUT="1,1,1"
-    EXPECTED="3"
+    CHECKS="1,1,1;3;$EPSILON"
 
     for i in $( seq 1 $CHECKS_PER_BATCH )
     do
@@ -30,11 +29,10 @@ do
         b=$(( $RANDOM % 10 + 1 ))
         c=$(( $RANDOM % 10 + 1 ))
         d=$(( $a+$b+$c ))
-        INPUT="$INPUT;$a,$b,$c"
-        EXPECTED="$EXPECTED;$d"
+        CHECKS="${CHECKS}_$a,$b,$c;$d;$EPSILON"
     done
 
-    echo "$INPUT\_$EXPECTED\_$EPSILON" | nc $HOST $PORT
+    echo "$CHECKS" | nc $HOST $PORT
 done
 
 echo "1,1,1" | nc $HOST $PORT

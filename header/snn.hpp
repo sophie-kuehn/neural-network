@@ -24,8 +24,6 @@ namespace SNN
 
     typedef std::vector<Neuron*> NeuronLayer;
 
-    bool FileExists(const std::string path);
-
     class ActivationFunction
     {
     public:
