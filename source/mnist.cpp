@@ -8,7 +8,7 @@ namespace SNN
 {
     MNIST_DataSet MNIST_Decoder::loadDataSet(std::string dataPath, std::string labelPath)
     {
-        if (!SNN::FileExists(dataPath)) {
+        if (!SCLT::FileExists(dataPath)) {
             throw std::invalid_argument("file \"" + dataPath + "\" not found");
         }
 
@@ -60,7 +60,7 @@ namespace SNN
         float incorrect = 0;
 
         for (int i = 0; i < this->digitsTest.size(); i++) {
-            SNN::DoubleVector input;
+            SCLT::DoubleVector input;
             input.push_back(1); // bias
 
             for (int x = 0; x < 28; x++) {
@@ -69,7 +69,7 @@ namespace SNN
                 }
             }
 
-            DoubleVector output = network->process(input);
+            SCLT::DoubleVector output = network->process(input);
 
             MNIST_ProbabilityDigit probs[10];
             for (int k = 0; k < 10; k++) {
@@ -102,7 +102,7 @@ namespace SNN
             mnistFilesRootPath + "t10k-labels.idx1-ubyte"
         );
 
-        if (FileExists(networkSaveFilePath)) {
+        if (SCLT::FileExists(networkSaveFilePath)) {
             this->network->load(networkSaveFilePath);
         } else {
             this->network->addLayer(1+(28*28));
@@ -116,7 +116,7 @@ namespace SNN
             std::cout << "train" << std::endl;
 
             for (int i = 0; i < digitsTrain.size(); i++) {
-                SNN::DoubleVector input;
+                SCLT::DoubleVector input;
                 input.push_back(1); // bias
 
                 for (int x = 0; x < 28; x++) {
@@ -125,7 +125,7 @@ namespace SNN
                     }
                 }
 
-                SNN::DoubleVector expected = {0,0,0,0,0,0,0,0,0,0};
+                SCLT::DoubleVector expected = {0,0,0,0,0,0,0,0,0,0};
                 expected[digitsTrain[i].label] = 1;
 
                 network->process(input, expected, epsilon);
@@ -136,4 +136,19 @@ namespace SNN
             epsilon *= 0.9;
         }
     };
+};
+
+int main(int argc, char **argv)
+{
+    SCLT::CliArguments* arguments;
+    arguments = new SCLT::CliArguments(argc, argv, {
+        {'f', "file", "file for storing network", true},
+        {'m', "mnist", "specify data directory to run MNIST test", true}
+    }, 25);
+    if (!arguments->has("file")) {
+        throw std::invalid_argument("you have to provide --file");
+    }
+    auto MNIST = new SNN::MNIST_Test;
+    MNIST->execute(arguments->get("file"), arguments->get("mnist") + "/");
+    return 0;
 };
